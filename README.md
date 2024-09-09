@@ -35,4 +35,4 @@ Further commands at:
 ```
 3. Commit your changes and create a PR to this repository.
 
-**NOTE:** your game's repository HAS to have a requirements.txt with all neccesary python libraries/versions AND a main.py that runs the game
+**NOTE:** your game's repository HAS to have a **requirements.txt** with all neccesary python libraries/versions AND a **main.py** that runs the game
