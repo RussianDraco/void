@@ -12,8 +12,8 @@ def local_env():
     return local_env_
 def get_games():
     url = "https://raw.githubusercontent.com/RussianDraco/void/main/GAMES.json"
-    response = requests.get(url)
-    games = json.loads(response.text)
+    response = str(requests.get(url).text)
+    games = json.loads(response)
     return games
 def get_installed():
     local_env_ = local_env()
@@ -54,13 +54,11 @@ def update_game(name):
 def cli():
     pass
 
-@cli.command()
 @cli.command(help="Classic test lol.")
 def ping():
     click.echo("pong")
 
 
-@cli.command()
 @cli.command(help="This command plays a game.")
 @click.argument("game")
 def install(game):
@@ -81,7 +79,6 @@ def install(game):
     click.echo(f"Installed {g['name']} {g['version']}")
     return
 
-@cli.command()
 @cli.command(help="This command uninstalls a game.")
 @click.argument("game")
 def uninstall(game):
@@ -102,7 +99,6 @@ def uninstall(game):
     f.close()
     click.echo(f"Uninstalled {g['name']} {g['version']}")
 
-@cli.command()
 @cli.command(help="This command lists the installed games.")
 def list():
     click.echo("Installed games:")
@@ -112,11 +108,10 @@ def list():
     for game in list(installed.values()):
         click.echo(f"{game['name']} {str(game['version'])} - {game['description']}")
     click.echo("-" * 20)
-    click.echo("Run 'info <game>' to get more information about a game")
-    click.echo("Run 'play <game>' to play a game")
-    click.echo("Run 'updates' & 'update <game>' to update installed games")
+    click.echo("Run 'void info <game>' to get more information about a game")
+    click.echo("Run 'void play <game>' to play a game")
+    click.echo("Run 'void updates' & 'void update <game>' to update installed games")
 
-@cli.command()
 @cli.command(help="This command gives information about an installed game.")
 @click.argument("game")
 def info(game):
@@ -136,7 +131,6 @@ def info(game):
     click.echo(f"Source: {g['source']}")
     return
 
-@cli.command()
 @cli.command(help="This command plays a game.")
 @click.argument("game")
 def play(game):
@@ -148,7 +142,6 @@ def play(game):
         return
     subprocess.run(["python", game_dir + "main.py"])
 
-@cli.command()
 @cli.command(help="This command lists the updates for installed games.")
 def updates():
     click.echo("Updates:")
@@ -165,9 +158,8 @@ def updates():
         click.echo("No updates available")
 
     click.echo("-" * 20)
-    click.echo("Run 'update <game>' to update a game")
+    click.echo("Run 'void update <game>' to update a game")
 
-@cli.command()
 @cli.command(help="This command updates an installed game.")
 @click.argument("game")
 def update(game):
@@ -189,15 +181,17 @@ def update(game):
     else:
         click.echo(f"Game {game} not found")
 
-@cli.command()
 @cli.command(help="This command lists the available games.")
 def games():
     click.echo("Available games:")
     games = get_games()
 
-    for game in list(games.values()):
+    first = True
+    for gkey, game in games.items():
+        if not first:
+            click.echo('')
         click.echo(f"{game['name']} by {game['author']} - {game['description']}")
-        click.echo('')
+        first = False
 
     click.echo("-" * 20)
-    click.echo("Run 'install <game>' to install a game")
+    click.echo("Run 'void install <game>' to install a game")
