@@ -10,7 +10,7 @@ setup(
     version="0.1.0",
     author="Ivan Sivakov",
     license="MIT",
-    description="A manager for CLI-based games",
+    description="A manager for Python-based games",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/RussianDraco/void",

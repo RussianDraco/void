@@ -1,6 +1,6 @@
 # Void CLI-Game Manager
 
-Welcome to Void, a game manager made for managing Python CLI-based/in terminal games. With Void, you can manage, install, update and publish CLI-based games.
+Welcome to Void, a game manager made for managing and publishing Python terminal games. With Void, you can manage, install, update and publish Python games.
 
 ## Installation
 ( Temporarily on testpypi )
