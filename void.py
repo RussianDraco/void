@@ -155,6 +155,7 @@ def play(game):
     click.echo(f"Running {game}...")
     click.echo('')
 
+    subprocess.run(["cd", game_dir])
     subprocess.run(["python", game_dir + "main.py"])
 
 @cli.command(help="This command lists the updates for installed games.")
