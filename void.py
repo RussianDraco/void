@@ -5,6 +5,18 @@ import os
 import subprocess
 from pathlib import Path
 
+def check_python_runner():
+    try:
+        subprocess.run(["python", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return "python"
+    except FileNotFoundError:
+        try:
+            subprocess.run(["python3", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return "python3"
+        except FileNotFoundError:
+            click.echo("Python not found!")
+            click.echo("Please install Python 3.7 or higher for void to work")
+            exit(1)
 #Local env: ~/.void/ {installed.json, games/}
 def local_env():
     local_env_ = str(Path.home()) + "/.void/"
@@ -16,6 +28,10 @@ def local_env():
         f.close()
     if not os.path.exists(local_env_ + "games/"):
         os.mkdir(local_env_ + "games/")
+    if not os.path.exists(local_env_ + "config.json"):
+        with open(local_env_ + "config.json", "w") as f:
+            json.dump({"PYTHON_RUNNER": check_python_runner()}, f)
+        f.close()
     return local_env_
 def get_games():
     url = "https://raw.githubusercontent.com/RussianDraco/void/main/GAMES.json"
@@ -28,6 +44,12 @@ def get_installed():
         installed = json.load(f)
     f.close()
     return installed
+def get_config():
+    local_env_ = local_env()
+    with open(local_env_ + "config.json", "r") as f:
+        config = json.load(f)
+    f.close()
+    return config
 
 #Game github repo structure: {game_name}/ main.py, requirements.txt, resources(optional)
 def install_game(name, description, version, author, github_url):
@@ -155,8 +177,9 @@ def play(game):
     click.echo(f"Running {game}...")
     click.echo('')
 
-    subprocess.run(["cd", game_dir])
-    subprocess.run(["python", game_dir + "main.py"])
+    os.chdir(game_dir)
+    config = get_config()
+    subprocess.run([config['PYTHON_RUNNER'], game_dir + "main.py"])
 
 @cli.command(help="This command lists the updates for installed games.")
 def updates():
