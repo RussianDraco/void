@@ -5,6 +5,12 @@
         "version": "1.0",
         "author": "therussiandraco",
         "source": "https://github.com/RussianDraco/CultRoulette"
+    },
+    "Shroom": {
+        "name": "Shroom",
+        "description": "Play doom with Shrek, teaming up with goats and fighting demons",
+        "version": "1.0",
+        "author": "therussiandraco/BigBirdTheGreat",
+        "source": "https://github.com/RussianDraco/shroom"
     }
-    
 }
