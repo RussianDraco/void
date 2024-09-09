@@ -4,7 +4,7 @@ Welcome to Void, a game manager made for managing and publishing Python terminal
 
 ## Installation
 ( Temporarily on testpypi )
-`pip install -i https://test.pypi.org/simple/ void==0.1.0`
+`pip install -i https://test.pypi.org/simple/ void==0.1.1`
 
 ## Usage
 
