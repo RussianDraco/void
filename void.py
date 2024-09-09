@@ -3,12 +3,19 @@ import requests
 import json
 import os
 import subprocess
+from pathlib import Path
 
 #Local env: ~/.void/ {installed.json, games/}
 def local_env():
-    local_env_ = os.homedir() + "/.void/"
+    local_env_ = str(Path.home()) + "/.void/"
     if not os.path.exists(local_env_):
         os.mkdir(local_env_)
+    if not os.path.exists(local_env_ + "installed.json"):
+        with open(local_env_ + "installed.json", "w") as f:
+            json.dump({}, f)
+        f.close()
+    if not os.path.exists(local_env_ + "games/"):
+        os.mkdir(local_env_ + "games/")
     return local_env_
 def get_games():
     url = "https://raw.githubusercontent.com/RussianDraco/void/main/GAMES.json"
@@ -31,6 +38,7 @@ def install_game(name, description, version, author, github_url):
     installed_file = local_env_ + "installed.json"
 
     subprocess.run(["git", "clone", github_url, game_dir])
+    subprocess.run(["rm", "-rf", game_dir + ".git/"])
 
     if os.path.exists(requirements_file):
         subprocess.run(["pip", "install", "-r", requirements_file])
@@ -46,9 +54,9 @@ def uninstall_game(name):
     games_dir = local_env_ + "games/"
     game_dir = games_dir + name + "/"
     subprocess.run(["rm", "-r", game_dir])
-def update_game(name):
+def update_game(name, description, version, author, github_url):
     uninstall_game(name)
-    install_game(name)
+    install_game(name, description, version, author, github_url)
 
 @click.group()
 def cli():
@@ -60,8 +68,9 @@ def ping():
 
 
 @cli.command(help="This command plays a game.")
-@click.argument("game")
+@click.argument("game", nargs=-1)
 def install(game):
+    game = " ".join(game)
     games = get_games()
     installed = get_installed()
 
@@ -70,7 +79,7 @@ def install(game):
         return
 
     try:
-        g = games.get(game)
+        g = games[game]
     except KeyError:
         click.echo(f"Game {game} not found")
         return
@@ -80,20 +89,21 @@ def install(game):
     return
 
 @cli.command(help="This command uninstalls a game.")
-@click.argument("game")
+@click.argument("game", nargs=-1)
 def uninstall(game):
+    game = " ".join(game)
     local_env_ = local_env()
     installed_file = local_env_ + "installed.json"
     installed = get_installed()
     
     try:
-        g = installed.get(game)
+        g = installed[game]
     except KeyError:
         click.echo(f"Game {game} not found")
         return
     
     uninstall_game(game)
-    installed.remove(g)
+    del installed[game]
     with open(installed_file, "w") as f:
         json.dump(installed, f)
     f.close()
@@ -102,10 +112,9 @@ def uninstall(game):
 @cli.command(help="This command lists the installed games.")
 def list():
     click.echo("Installed games:")
-    local_env = local_env()
     installed = get_installed()
 
-    for game in list(installed.values()):
+    for gkey, game in installed.items():
         click.echo(f"{game['name']} {str(game['version'])} - {game['description']}")
     click.echo("-" * 20)
     click.echo("Run 'void info <game>' to get more information about a game")
@@ -113,33 +122,39 @@ def list():
     click.echo("Run 'void updates' & 'void update <game>' to update installed games")
 
 @cli.command(help="This command gives information about an installed game.")
-@click.argument("game")
+@click.argument("game", nargs=-1)
 def info(game):
-    local_env = local_env()
+    game = " ".join(game)
     installed = get_installed()
 
     try:
-        g = installed.get(game)
+        g = installed[game]
     except KeyError:
         click.echo(f"Game {game} not found")
         return
 
+    click.echo('')
     click.echo(f"Name: {g['name']}")
     click.echo(f"Description: {g['description']}")
     click.echo(f"Version: {g['version']}")
     click.echo(f"Author: {g['author']}")
     click.echo(f"Source: {g['source']}")
+    click.echo('')
     return
 
 @cli.command(help="This command plays a game.")
-@click.argument("game")
+@click.argument("game", nargs=-1)
 def play(game):
+    game = " ".join(game)
     local_env_ = local_env()
     games_dir = local_env_ + "games/"
     game_dir = games_dir + game + "/"
     if not os.path.exists(game_dir):
         click.echo(f"Game {game} not found")
         return
+    click.echo(f"Running {game}...")
+    click.echo('')
+
     subprocess.run(["python", game_dir + "main.py"])
 
 @cli.command(help="This command lists the updates for installed games.")
@@ -149,8 +164,8 @@ def updates():
     installed = get_installed()
 
     empty = True
-    for game in list(installed.values()):
-        if (g := games.get(game["name"])) and (g["version"] != game["version"]):
+    for gkey, game in installed.items():
+        if (g := games[game["name"]]) and (g["version"] != game["version"]):
             click.echo(f"{game['name']} ({game['version']} -> {g['version']})")
             empty = False
 
@@ -161,20 +176,21 @@ def updates():
     click.echo("Run 'void update <game>' to update a game")
 
 @cli.command(help="This command updates an installed game.")
-@click.argument("game")
+@click.argument("game", nargs=-1)
 def update(game):
+    game = " ".join(game)
     games = get_games()
     installed = get_installed()
 
     try:
-        g = installed.get(game)
+        g = installed[game]
     except KeyError:
         click.echo(f"Game {game} not found")
         return
     
-    if (g_ := games.get(g["name"])):
+    if (g_ := games[g["name"]]):
         if g_["version"] != g["version"]:
-            update_game(g["name"])
+            update_game(g["name"], g_["description"], g_["version"], g_["author"], g_["source"])
             click.echo(f"Updated {g['name']} {g['version']} -> {g_['version']}")
         else:
             click.echo(f"No updates available for {g['name']}")
