@@ -79,7 +79,8 @@ def install_game(name, description, version, author, github_url):
     installed_file = local_env_ + "installed.json"
 
     subprocess.run(["git", "clone", github_url, game_dir])
-    subprocess.run(["rm", "-rf", game_dir + ".git/"])
+    if os.path.exists(game_dir + ".git/"):
+        subprocess.run(["rm", "-rf", game_dir + ".git/"])
 
     if os.path.exists(requirements_file):
         subprocess.run([get_config()['PIP_RUNNER'], "install", "-r", requirements_file])
