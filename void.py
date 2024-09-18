@@ -9,6 +9,9 @@ from pathlib import Path
 # venv/Scripts/activate
 # python setup.py sdist bdist_wheel
 # twine upload --repository testpypi --skip-existing dist/*
+# 
+# BUILD NOTES
+# Only attempt building AFTER the version was changed in setup.py
 
 
 def check_pip_runner():
