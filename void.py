@@ -5,15 +5,27 @@ import os
 import subprocess
 from pathlib import Path
 
+def check_pip_runner():
+    try:
+        subprocess.run(["pip", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return "pip"
+    except Exception as e:
+        try:
+            subprocess.run(["pip3", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return "pip3"
+        except Exception as e2:
+            click.echo("Pip not found!")
+            click.echo("Please install Pip for void to work")
+            exit(1)
 def check_python_runner():
     try:
         subprocess.run(["python", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return "python"
-    except FileNotFoundError:
+    except Exception as e:
         try:
             subprocess.run(["python3", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             return "python3"
-        except FileNotFoundError:
+        except Exception as e2:
             click.echo("Python not found!")
             click.echo("Please install Python 3.7 or higher for void to work")
             exit(1)
@@ -30,7 +42,7 @@ def local_env():
         os.mkdir(local_env_ + "games/")
     if not os.path.exists(local_env_ + "config.json"):
         with open(local_env_ + "config.json", "w") as f:
-            json.dump({"PYTHON_RUNNER": check_python_runner()}, f)
+            json.dump({"PYTHON_RUNNER": check_python_runner(), "PIP_RUNNER": check_pip_runner()}, f)
         f.close()
     return local_env_
 def get_games():
@@ -49,6 +61,13 @@ def get_config():
     with open(local_env_ + "config.json", "r") as f:
         config = json.load(f)
     f.close()
+
+    #CHECK ALL SYSTEM VARIABLES
+    if not config["PYTHON_RUNNER"]:
+        config["PYTHON_RUNNER"] = check_python_runner()
+    if not config["PIP_RUNNER"]:
+        config["PIP_RUNNER"] = check_pip_runner()
+
     return config
 
 #Game github repo structure: {game_name}/ main.py, requirements.txt, resources(optional)
@@ -63,7 +82,7 @@ def install_game(name, description, version, author, github_url):
     subprocess.run(["rm", "-rf", game_dir + ".git/"])
 
     if os.path.exists(requirements_file):
-        subprocess.run(["pip", "install", "-r", requirements_file])
+        subprocess.run([get_config()['PIP_RUNNER'], "install", "-r", requirements_file])
 
     installed = get_installed()
 
