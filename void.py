@@ -5,6 +5,12 @@ import os
 import subprocess
 from pathlib import Path
 
+#build python library:
+# venv/Scripts/activate
+# python setup.py sdist bdist_wheel
+# twine upload --repository testpypi --skip-existing dist/*
+
+
 def check_pip_runner():
     try:
         subprocess.run(["pip", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

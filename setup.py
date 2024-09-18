@@ -7,7 +7,7 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 
 setup(
     name="void",
-    version="0.1.1",
+    version="0.1.2",
     author="Ivan Sivakov",
     license="MIT",
     description="A manager for Python-based games",
