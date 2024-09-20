@@ -89,7 +89,10 @@ def install_game(name, description, version, author, github_url):
 
     subprocess.run(["git", "clone", github_url, game_dir])
     if os.path.exists(game_dir + ".git/"):
-        subprocess.run(["rm", "-rf", game_dir + ".git/"])
+        try:
+            subprocess.run(["rm", "-rf", game_dir + ".git/"])
+        except FileNotFoundError:
+            pass
 
     if os.path.exists(requirements_file):
         subprocess.run([get_config()['PIP_RUNNER'], "install", "-r", requirements_file])
